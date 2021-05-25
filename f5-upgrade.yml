@@ -9,8 +9,8 @@
       user: admin
       password: admin
       validate_certs: no
-    new_image: "Hotfix-BIGIP-16.0.1.1.0.9.6-ENG.iso"
-    #new_image: "BIGIP-16.0.1.1-0.0.6.iso"
+    #new_image: "Hotfix-BIGIP-16.0.1.1.0.9.6-ENG.iso"
+    new_image: "BIGIP-16.0.1.1-0.0.6.iso"
     new_image_dir: "/root/ansible/upgrade"
     backup_loc: "/backups/ucs"
     backup_pfx: "ref12345"
@@ -52,7 +52,16 @@
   - name: Identify Hosts need Hotfix
     set_fact:
       wants_upgrade: True
-    when: new_image is search("Hotfix")
+    when: 
+      - new_image is search("Hotfix") 
+      - new_image is search(current_version)
+
+  - name: Identify Hosts that DO NOT need Hotfix
+    set_fact:
+      wants_upgrade: False
+    when: 
+      - new_image is search("Hotfix") 
+      - not new_image is search(current_version)
 
   - name: Only Upgrading Devices Which Need It
     block:
@@ -103,15 +112,16 @@
     file:
       path: "{{ backup_loc }}/{{ inventory_hostname_short }}"
       state: directory
-  
-  - name: Get Pre-Upgrade UCS Backup
-    bigip_ucs_fetch:
-      create_on_missing: yes
-      backup: yes
-      src: "{{ backup_pfx }}_pre-upgrade.ucs"
-      dest: "{{ backup_loc }}/{{ inventory_hostname_short }}/{{ backup_pfx }}_pre-upgrade.ucs"
-      provider: "{{ provider }}"
     when: wants_upgrade
+  
+  #- name: Get Pre-Upgrade UCS Backup
+  #  bigip_ucs_fetch:
+  #    create_on_missing: yes
+  #    backup: yes
+  #    src: "{{ backup_pfx }}_pre-upgrade.ucs"
+  #    dest: "{{ backup_loc }}/{{ inventory_hostname_short }}/{{ backup_pfx }}_pre-upgrade.ucs"
+  #    provider: "{{ provider }}"
+  #  when: wants_upgrade
 
   - name: Upload image
     bigip_software_image:
@@ -129,12 +139,21 @@
     when: wants_upgrade
 
   - name: Activate image
-    shell: tmsh reboot volume "{{ dest_boot_loc }}"
-    ignore_errors: true
+    uri:
+      body_format: json
+      url: https://{{inventory_hostname}}/mgmt/tm/util/bash
+      user: "{{ provider.user }}"
+      password: "{{ provider.password }}"
+      method: POST
+      body: {"command":"run", "utilCmdArgs": "-c 'tmsh reboot volume {{dest_boot_loc}}'"}
+      validate_certs: no
+    delegate_to: localhost
+    when: wants_upgrade
 
   - name: wait for device to come down before checking if it's up again
     shell: sleep 200
     delegate_to: localhost
+    when: wants_upgrade
     
   - name: wait for ssh to come up
     wait_for_connection:
@@ -142,18 +161,20 @@
        sleep: 5
        delay: 5
        timeout: 300
+    when: wants_upgrade
   - name: Wait for device to become either standby or active.
     shell: cat /var/prompt/ps1
     register: result
     until: ("Active" in result.stdout) or ("Standby" in result.stdout)
     retries: 20
     delay: 10
-     
-  - name: Get Post-Upgrade UCS Backup
-    bigip_ucs_fetch:
-      create_on_missing: yes
-      backup: yes
-      src: "{{ backup_pfx }}_post-upgrade.ucs"
-      dest: "{{ backup_loc }}/{{ inventory_hostname_short }}/{{ backup_pfx }}_post-upgrade.ucs"
-      provider: "{{ provider }}"
     when: wants_upgrade
+     
+  #- name: Get Post-Upgrade UCS Backup
+  #  bigip_ucs_fetch:
+  #    create_on_missing: yes
+  #    backup: yes
+  #    src: "{{ backup_pfx }}_post-upgrade.ucs"
+  #    dest: "{{ backup_loc }}/{{ inventory_hostname_short }}/{{ backup_pfx }}_post-upgrade.ucs"
+  #    provider: "{{ provider }}"
+  #  when: wants_upgrade

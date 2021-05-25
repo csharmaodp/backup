@@ -166,7 +166,7 @@
     register: result
     until: ("Active" in result.stdout) or ("Standby" in result.stdout)
     retries: 20
-    delay: 10
+    delay: 20
     when: wants_upgrade
      
   - name: Get Post-Upgrade UCS Backup

@@ -30,3 +30,11 @@ provider:
 
     backup_pfx: "ref12345"
 ```
+
+- new_image: This is the name (not the location) of the ISO image that you want to install on your BIG-IP. This can be either a HotFix or a major version ISO. This must be accessible on the control node.
+
+- new_image_dir: This is the location of the ISO image that you want to install. This must be accessible on the control node.
+
+- backup_loc: This is the location that UCS backups will be stored in. This location is **ON THE BIG-IP** not the ansible control node.
+
+- backup_pfx: This is a prefix that will be added to the ucs backup. This is useful is you want to use the date, or some other identifier to denote the work being done (i.e. a change number).

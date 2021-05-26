@@ -15,6 +15,7 @@ There are a number of variables that need to be set or passed into the playbook 
 
 The ansible v1 modules for F5 BIG-IP need a provider block for authentication (this changes in v2 but for now these require the provider).
 
+```
 provider:
   server: "{{ inventory_hostname }}"
   user: **YOUR USERNAME**
@@ -28,4 +29,4 @@ provider:
     backup_loc: "/var/local/ucs"
 
     backup_pfx: "ref12345"
-
+```

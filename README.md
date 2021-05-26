@@ -71,7 +71,11 @@ ansible-playbook -i f5-hosts -e '{ "bigip_provider": { "password": "foo"}  }'
 For most people the first method will work just fine.
 
 ## Caveats
-During testing I found that the BIG-IP needs to have an appropriate amount of resources in order to 
+During testing I found that the BIG-IP needs to have an appropriate amount of resources in order to proess the upgrade. This has to do with the process restjavad on the BIG-IP needing an appropriate amount of memory in order to receive API calls. Under the covers, the ansible modules are making API calls that are handled by this process.
+
+To cut a long story short: **give you BIG-IP enough memory**
+
+
 ## Sample output
 The following represents full sample output from a major version upgrade on a test device (VE) that I ran.
 

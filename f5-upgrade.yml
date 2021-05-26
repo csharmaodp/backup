@@ -150,8 +150,8 @@
     when: wants_upgrade
 
   - name: wait for device to come down before checking if it's up again
-    shell: sleep 200
-    delegate_to: localhost
+    pause:
+      minutes: 5
     when: wants_upgrade
     
   - name: wait for ssh to come up

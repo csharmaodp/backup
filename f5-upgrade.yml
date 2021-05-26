@@ -161,14 +161,23 @@
        delay: 5
        timeout: 300
     when: wants_upgrade
-  - name: Wait for device to become either standby or active.
-    shell: cat /var/prompt/ps1
-    register: result
-    until: ("Active" in result.stdout) or ("Standby" in result.stdout)
+
+  - name: Wait for device to become active or standby (URI method)
+    uri:
+      body_format: json
+      url: https://{{inventory_hostname}}/mgmt/tm/util/bash
+      user: "{{ provider.user }}"
+      password: "{{ provider.password }}"
+      method: POST
+      body: {"command":"run", "utilCmdArgs": "-c 'cat /var/prompt/ps1'"}
+      validate_certs: no
+    delegate_to: localhost
+    register: device_active
+    until: ("Active" in device_active.json.commandResult) or ("Standby" in device_active.json.commandResult)
     retries: 20
     delay: 20
     when: wants_upgrade
-     
+
   - name: Get Post-Upgrade UCS Backup
     bigip_ucs_fetch:
       create_on_missing: yes

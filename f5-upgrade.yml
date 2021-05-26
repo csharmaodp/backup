@@ -149,9 +149,17 @@
     delegate_to: localhost
     when: wants_upgrade
 
-  - name: wait for device to come down before checking if it's up again
+  - name: Pausing execution to give device time to reboot (first time)
     pause:
-      minutes: 5
+      minutes: 2
+    when: wants_upgrade
+  - name: Pausing execution to give device time to reboot (second time - to give you the illusion of progress)
+    pause:
+      minutes: 2
+    when: wants_upgrade
+  - name: Pausing execution to give device time to reboot (third and final time)
+    pause:
+      minutes: 1
     when: wants_upgrade
     
   - name: wait for ssh to come up

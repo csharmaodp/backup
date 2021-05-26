@@ -1,4 +1,4 @@
-- name: Base VE config
+- name: BIG-IP Upgrade
   hosts: "{{ target_hosts | default('f5') }}"
   gather_facts: False
 

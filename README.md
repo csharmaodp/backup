@@ -1,19 +1,19 @@
-# f5-upgrade-ansible
+# Upgrading F5 BIG-IP using Ansible
 
-This playbook is an example ansible playbook for upgrading an F5 BIG-IP.
+This playbook is an example Ansible playbook for upgrading an F5 BIG-IP.
 
 It builds upon the work of https://github.com/twpsyn/f5-upgrade
 
 ## The fine print
-This playbook has been tested for both major upgrades and hotfixes.
-It does perform some basic checks, but it is not exhausitve in what it checks for.
+This playbook has been tested for both major software releases as well as hotfixes.
+It does perform some basic checks, but it is not exhaustive in what it checks for.
 
-Most importantly - you use it at your own risk :)
+Most importantly - you use it at your own risk (and be sure to include more pre- and post-checks when using for production devices) 
 
 ## Installation
-In order to use the playbook you will need to have the F5 networks ansible modules (v1) installed on your control node.
+In order to use the playbook you will need to have the F5 Ansible modules (v1) installed on your control node.
 ```
-ansible-galaxy collection install f5networks.f5_module
+ansible-galaxy collection install f5networks.f5_modules
 ```
 
 ## Variables
@@ -39,16 +39,16 @@ backup_pfx: "ref12345"
 
 - **new_image**: This is the name (not the location) of the ISO image that you want to install on your BIG-IP. This can be either a HotFix or a major version ISO. This must be accessible on the control node.
 
-- **new_image_dir**: This is the location of the ISO image that you want to install. This must be accessible on the control node.
+- **new_image_dir**: This is the location of the ISO image that you want to install. This must be accessible on the Ansible control node.
 
-- **backup_loc**: This is the location that UCS backups will be stored in. This location is **ON THE BIG-IP** not the ansible control node.
+- **backup_loc**: This is the location that UCS backups will be stored in. This location is **ON THE BIG-IP** not the Ansible control node.
 
-- **backup_pfx**: This is a prefix that will be added to the ucs backup. This is useful is you want to use the date, or some other identifier to denote the work being done (i.e. a change number).
+- **backup_pfx**: This is a prefix that will be added to the ucs backup. This is useful is you want to use the date, or some other identifier to denote the work being done (i.e. a change window number or internal service request number).
 
 ## Assumptions
 There are several important assumptions that the playbook makes:
 
-- That the address in your ansible hosts file is the management address of the device.
+- That the address in your Ansible hosts file is the management address of the device.
 - That the user you use has admin priviliges on the BIG-IP.
 - That your F5 devices are in a group called "F5" in your ansible hosts file.
 
@@ -63,7 +63,7 @@ If you want to override the variables that are passed into the playbook you can 
 ansible-playbook -i f5-hosts -e "new_image_dir=/foo" f5-upgrade.yml
 ```
 
-If you want to pass in the multi level yaml as part of the provider, you can do this:
+If you want to pass in the multi level YAML as part of the provider, you can do this:
 ```
 ansible-playbook -i f5-hosts -e '{ "bigip_provider": { "password": "foo"}  }'
 ```
@@ -71,13 +71,10 @@ ansible-playbook -i f5-hosts -e '{ "bigip_provider": { "password": "foo"}  }'
 For most people the first method will work just fine.
 
 ## Caveats
-During testing I found that the BIG-IP needs to have an appropriate amount of resources in order to proess the upgrade. This has to do with the process restjavad on the BIG-IP needing an appropriate amount of memory in order to receive API calls. Under the covers, the ansible modules are making API calls that are handled by this process.
-
-To cut a long story short: **give you BIG-IP enough memory**
-
+During testing it was found that the BIG-IP needs to have an appropriate amount of resources in order to proess the upgrade. This has to do with the process restjavad on the BIG-IP needing an appropriate amount of memory in order to receive API calls (e.g by provisioning Management to Large). Under the covers, the Ansible modules are making API calls that are handled by this process.
 
 ## Sample output
-The following represents full sample output from a major version upgrade on a test device (VE) that I ran.
+The following represents full sample output from a major version upgrade on a test device (VE).
 
 ```
 TASK [Wait For Confirmation] ***************************************************************************************************************************
